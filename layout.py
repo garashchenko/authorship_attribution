@@ -1,5 +1,5 @@
 import os
-import math
+
 
 def get_tabs_ratio(filename):
     total_length = os.path.getsize(filename)
