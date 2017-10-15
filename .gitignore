@@ -1,4 +1,7 @@
+*.csv
 users*/
 .idea/
 __pycache__/
 test*
+*.png
+
