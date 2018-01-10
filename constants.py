@@ -337,7 +337,10 @@ terms_ast27 = (
     ast27.Is,
     ast27.IsNot,
     ast27.In,
-    ast27.NotIn
+    ast27.NotIn,
+    ast27.ExceptHandler,
+    ast27.Print,
+    ast27.TryFinally
 )
 
 terms_ast3 = (
@@ -424,5 +427,8 @@ terms_ast3 = (
     ast3.Is,
     ast3.IsNot,
     ast3.In,
-    ast3.NotIn
+    ast3.NotIn,
+    ast3.ExceptHandler,
+    ast27.Print,
+    ast27.TryFinally
 )

@@ -1,3 +1,5 @@
+ignore.txt
+venv
 *.csv
 users*/
 .idea/

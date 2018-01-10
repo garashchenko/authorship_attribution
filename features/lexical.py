@@ -6,15 +6,15 @@ from collections import namedtuple
 from constants import keywords_dict, keywords_dict3
 
 
-def count_comments(file):
+def count_comments(file_lines):
+
     comment_count = 0
     multiline_count = 0
-
     is_string = False
     is_multiline = False
     string_delim = ''
-    file.seek(0)
-    for line in file:
+
+    for line in file_lines:
 
         if is_multiline and line.strip()[-3:] in ("'''", '"""'):
             is_multiline = False
@@ -51,12 +51,12 @@ def get_literals_count(tree, is_ast3=False):
                               or isinstance(node, ast27.List) \
                               or isinstance(node, ast27.Dict) or isinstance(node, ast27.Tuple) \
                               or isinstance(node, ast27.Set)
-    # or isinstance(node, ast27.NameConstant)
 
     is_literal3 = lambda node: isinstance(node, ast3.Str) or isinstance(node, ast3.Num) \
                                or isinstance(node, ast3.List) \
                                or isinstance(node, ast3.Dict) or isinstance(node, ast3.Tuple) \
                                or isinstance(node, ast3.Set)
+
     tree_walk = ast27.walk(tree) if not is_ast3 else ast3.walk(tree)
     check_literal = is_literal if not is_ast3 else is_literal3
     for node in tree_walk:
@@ -81,6 +81,7 @@ def get_unique_keywords(tree, is_ast3=False):
 
 def get_functions_info(tree, is_ast3=False):
     args_count = []
+    name_lengths = []
     funcs_count = 0
     tree_walk = ast27.walk(tree) if not is_ast3 else ast3.walk(tree)
     func_def = ast27.FunctionDef if not is_ast3 else ast3.FunctionDef
@@ -88,17 +89,19 @@ def get_functions_info(tree, is_ast3=False):
         if isinstance(node, func_def):
             funcs_count += 1
             args_count.append(len(node.args.args))
-    FunctionsInfo = namedtuple('FunctionsInfo', 'func_count args_count')
-    return FunctionsInfo(func_count=funcs_count, args_count=args_count)
+            name_lengths.append(len(node.name))
+    FunctionsInfo = namedtuple('FunctionsInfo', 'func_count args_count name_lengths')
+    return FunctionsInfo(func_count=funcs_count, args_count=args_count, name_lengths=name_lengths)
 
 
 def get_branching_factor(tree, is_ast3=False):
     child_count = 0
     nodes_count = 0
     tree_walk = ast27.walk(tree) if not is_ast3 else ast3.walk(tree)
-    for node in ast27.walk(tree):
+    for node in tree_walk:
         has_children = False
-        for n in ast27.iter_child_nodes(node):
+        child_nodes = ast27.iter_child_nodes(node) if not is_ast3 else ast3.iter_child_nodes(node)
+        for n in child_nodes:
             has_children = True
             child_count += 1
         if has_children:
@@ -114,12 +117,20 @@ def get_func_args_std(args_count):
     return numpy.array(args_count).std() if len(args_count) > 0 else 0
 
 
-def get_line_lengths(file):
+def get_line_lengths(file_lines):
     line_lengths = []
-    file.seek(0)
-    for line in file:
+    for line in file_lines:
         line_lengths.append(len(line))
     return line_lengths
+
+
+def get_names_lengths(tree, is_ast3=False):
+    tree_walk = ast27.walk(tree) if not is_ast3 else ast3.walk(tree)
+    result = []
+    for node in tree_walk:
+        if hasattr(node, 'id'):
+            result.append(len(node.id))
+    return result
 
 
 def get_avg_line_len(line_lengths):
@@ -128,3 +139,19 @@ def get_avg_line_len(line_lengths):
 
 def get_std_line_len(line_lengths):
     return numpy.array(line_lengths).std()
+
+
+def get_avg_function_name_length(name_lengths):
+    return numpy.array(name_lengths).mean() if len(name_lengths) > 0 else 0
+
+
+def get_std_function_name_length(name_lengths):
+    return numpy.array(name_lengths).std() if len(name_lengths) > 0 else 0
+
+
+def get_avg_name_lengths(name_lengths):
+    return numpy.array(name_lengths).mean() if len(name_lengths) > 0 else 0
+
+
+def get_std_name_lengths(name_lengths):
+    return numpy.array(name_lengths).std() if len(name_lengths) > 0 else 0
